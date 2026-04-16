@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Login GHCR
+      run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+    - name: Build & Push Image
+      run: |
+        IMAGE=ghcr.io/${{ github.repository }}
+        docker build -t $IMAGE:${{ github.sha }} .
+        docker push $IMAGE:${{ github.sha }}
+
+    - name: Update GitOps Repo
+      run: |
+        git clone https://x-access-token:${{ secrets.GITOPS_TOKEN }}@github.com/<你的用户名>/gitops-repo.git
+        cd gitops-repo/apps/nginx
+
+        sed -i "s|image:.*|image: ghcr.io/${{ github.repository }}:${{ github.sha }}|" deployment.yaml
+
+        git config user.name "github-actions"
+        git config user.email "actions@github.com"
+
+        git commit -am "update image"
+        git push
