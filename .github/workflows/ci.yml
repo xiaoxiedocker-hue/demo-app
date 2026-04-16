@@ -23,7 +23,7 @@ jobs:
 
     - name: Update GitOps Repo
       run: |
-        git clone https://x-access-token:${{ secrets.GITOPS_TOKEN }}@github.com/<你的用户名>/gitops-repo.git
+        git clone https://x-access-token:${{ secrets.GITOPS_TOKEN }}@github.com/xiaoxiedocker-hue/gitops-repo.git
         cd gitops-repo/apps/nginx
 
         sed -i "s|image:.*|image: ${{ secrets.DOCKERHUB_USERNAME }}/demo-nginx:${{ github.sha }}|" deployment.yaml
